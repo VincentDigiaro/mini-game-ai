@@ -6,7 +6,7 @@ import re
 import requests
 
 
-jsonHistory = []
+jsonHistory =  {}
 
 class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
     def _set_headers(self):
@@ -38,19 +38,25 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         
         # Extrait la valeur associée à 'key'
         question = post_vars.get('question')
+        model = post_vars.get('model')
+        idPlayer = post_vars.get('idPlayer')
         
         print(question)
         url = 'http://localhost:11434/api/chat'
         headers = {'Content-Type': 'application/json'}
         
         userQuestion = {"role": "user", "content": question}
-        jsonHistory.append(userQuestion)
         
-        print(str(jsonHistory))
+        if (idPlayer not in jsonHistory):
+            jsonHistory[idPlayer] = {'jean':[], 'chacha': []}
+            
+        jsonHistory[idPlayer][model].append(userQuestion)
+        
+        
         data = json.dumps({
-            "model": "wizard",
+            "model": model,
             "stream": False,
-            "messages": jsonHistory
+            "messages": jsonHistory[idPlayer][model]
         })
 
         response = requests.post(url, headers=headers, data=data)
@@ -61,9 +67,9 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         
         botResponse = {"role": "assistant", "content": result}
    
-        jsonHistory.append(botResponse)
+        jsonHistory[idPlayer][model].append(botResponse)
         
-            
+        print(str(jsonHistory[idPlayer][model]))    
         # Affiche et répond à la requête
 
         self.send_response(200)  # 200 OK
