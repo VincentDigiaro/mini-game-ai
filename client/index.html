@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Love and Peace</title>
+    <style>
+        body { margin: 0; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
+</head>
+<body>
+
+<div id="chatBox" style="position: absolute; bottom: 10px; left: 10px; width: 600px; display: none;">
+    <textarea id="chatInput" placeholder="Tapez votre message ici..." style="width: 100%; height: 100px;"></textarea>
+    <textarea id="chatoutput" style="width: 100%; height: 100px;"></textarea>
+
+</div>
+<script>
+
+
+    async function sendMessage() {
+		var input = document.getElementById("chatInput");
+		var output = document.getElementById("chatoutput");
+		var message = input.value;
+		input.disabled = true
+		var response = await sendPostRequest(message);  // Attendre la réponse avant de continuer
+		output.value =  response;  // Ajoute la réponse à la zone de texte
+		input.disabled = false
+		input.value = ''
+		input.focus()
+	}
+
+    
+	
+	async function sendPostRequest(txt) {
+		const url = 'http://109.210.115.164:8080';
+		const data = { question: txt };
+		const headers = {
+			'Content-Type': 'application/json'
+		};
+
+		try {
+			const response = await fetch(url, {
+				method: 'POST',     // Méthode HTTP
+				headers: headers,   // Entêtes HTTP
+				body: JSON.stringify(data)  // Corps de la requête, avec l'objet data converti en chaîne JSON
+			});
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			// a debugguer,  pkoi je reçois l'entete ici??
+			let text = await response.text();  // Convertit la réponse en texte
+			let jsonStart = text.indexOf('{');  // Trouve la position du premier '{'
+
+			text = text.substring(jsonStart);  // Extrayez à partir du premier '{'
+			
+			const responseData = JSON.parse(text);  // Parsez le texte comme JSON
+			return responseData.message;  // Retourne seulement la valeur de "message"
+
+		} catch (error) {
+			console.error('Error:', error); // Gère les erreurs potentielles
+			return "Erreur lors de la réception de la réponse.";  // Message d'erreur par défaut
+		}
+	}
+	
+	document.getElementById("chatInput").addEventListener("keypress", function(event) {
+	if (event.key === "Enter") {  // Vérifier si la touche pressée est "Entrée"
+		event.preventDefault();  // Empêcher le comportement par défaut de la touche "Entrée" (nouvelle ligne ou soumission du formulaire)
+		sendMessage();  // Appeler sendMessage si "Entrée" est pressée
+	}
+	
+    });
+	
+	
+</script>
+
+
+
+<script src="game.js"></script>
+
+</body>
+</html>
+
