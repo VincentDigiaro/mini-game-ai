@@ -1,8 +1,3 @@
-
-
-
-
-
 var config = {
     type: Phaser.AUTO,
     width: 800,
@@ -23,13 +18,13 @@ var config = {
 var game = new Phaser.Game(config);
 var player, perso1;
 var cursors, spaceBar;
-var isTouching = false; // Pour savoir si player touche perso1
+var isTouching = false; // Pour savoir si player touche qqun
 
 function preload() {
-    this.load.image('background', 'back.png');
-    this.load.image('perso1', 'jean.png');
-    this.load.image('perso2', 'chacha.png');
-    this.load.spritesheet('player', 'char.png', {
+    this.load.image('background', 'assets/back.png');
+    this.load.image('perso1', 'assets/jean.png');
+    this.load.image('perso2', 'assets/chacha.png');
+    this.load.spritesheet('player', 'assets/char.png', {
         frameWidth: 27,
         frameHeight: 35,
     });
@@ -68,12 +63,12 @@ function create() {
     perso2.body.moves = false; // Désactive le déplacement physique de perso1
 	
 	
-	const detectionZone = this.add.zone(perso1.x, perso1.y, 80, 80); // Vous pouvez ajuster la taille
+	const detectionZone = this.add.zone(perso1.x, perso1.y, 80, 80); 
     this.physics.world.enable(detectionZone); // Active la physique pour cette zone
     detectionZone.body.setAllowGravity(false);
     detectionZone.body.moves = false;
 	
-	const detectionZone2 = this.add.zone(perso2.x, perso2.y, 80, 80); // Vous pouvez ajuster la taille
+	const detectionZone2 = this.add.zone(perso2.x, perso2.y, 80, 80); 
     this.physics.world.enable(detectionZone2); // Active la physique pour cette zone
     detectionZone2.body.setAllowGravity(false);
     detectionZone2.body.moves = false;
@@ -128,27 +123,21 @@ function update() {
         player.setVelocityY(160);
     } 
 	
-	
-
     if (ctrl.isDown && isTouching) {
-        triggerFunction(); // Déclencher une fonction spécifique
+        triggerFunction(); 
     }
 	
-
 	if(!isTouching){
 		chatBox.style.display = "none";	
 		var output = document.getElementById("chatoutput");
         output.value = ""; 
 	}
-	 // Réinitialiser isTouching à chaque frame
 	
     if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
         player.anims.stop();
     } else {
 		isTouching = false;
 	}
-
-    
 }
 
 function triggerFunction() {
@@ -157,7 +146,5 @@ function triggerFunction() {
 	   
 	   var chatInput = document.getElementById("chatInput");
 	   chatInput.focus(); // Met le focus sur le champ de saisie
-	   
-
 }
 

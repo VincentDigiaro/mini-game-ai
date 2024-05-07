@@ -5,7 +5,6 @@ import subprocess
 import re
 import requests
 
-
 jsonHistory =  {}
 
 class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -25,10 +24,8 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(response_message.encode('utf-8'))
 
     def do_POST(self):
-        # Récupère la longueur des données
         
         self._set_headers()       
-
         
         content_length = int(self.headers['Content-Length'])
         
@@ -36,12 +33,10 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length).decode('utf-8')
         post_vars = json.loads(post_data)
         
-        # Extrait la valeur associée à 'key'
         question = post_vars.get('question')
         model = post_vars.get('model')
         idPlayer = post_vars.get('idPlayer')
         
-        print(question)
         url = 'http://localhost:11434/api/chat'
         headers = {'Content-Type': 'application/json'}
         
@@ -52,24 +47,30 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
             
         jsonHistory[idPlayer][model].append(userQuestion)
         
-        
         data = json.dumps({
             "model": model,
             "stream": False,
             "messages": jsonHistory[idPlayer][model]
         })
 
-        response = requests.post(url, headers=headers, data=data)
+        print("")
+        print("player " + idPlayer+ " to " + model)
+        print("question number " + str(1 + len(jsonHistory[idPlayer][model])//2) + ":")    
+        print(" - "+question)
         
-        message = json.loads(response.text)    
-       # result = result.strip()    
+        # Magic
+        response = requests.post(url, headers=headers, data=data) 
+        
+        message = json.loads(response.text)     
         result =  message.get('message').get('content')
-        
         botResponse = {"role": "assistant", "content": result}
    
+        print("answer:")
+        print(" - "+result)
+        print("")
+        
         jsonHistory[idPlayer][model].append(botResponse)
         
-        print(str(jsonHistory[idPlayer][model]))    
         # Affiche et répond à la requête
 
         self.send_response(200)  # 200 OK
