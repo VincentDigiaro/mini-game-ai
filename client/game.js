@@ -27,7 +27,8 @@ var isTouching = false; // Pour savoir si player touche perso1
 
 function preload() {
     this.load.image('background', 'back.png');
-    this.load.image('perso1', 'perso1.png');
+    this.load.image('perso1', 'jean.png');
+    this.load.image('perso2', 'chacha.png');
     this.load.spritesheet('player', 'char.png', {
         frameWidth: 27,
         frameHeight: 35,
@@ -59,13 +60,24 @@ function create() {
     });
 
     perso1 = this.physics.add.sprite(100, 100, 'perso1');
-	 perso1.setImmovable(true); // Empêche perso1 de se déplacer lors des collisions
+	perso1.setImmovable(true); // Empêche perso1 de se déplacer lors des collisions
     perso1.body.moves = false; // Désactive le déplacement physique de perso1
 	
-		const detectionZone = this.add.zone(perso1.x, perso1.y, 80, 80); // Vous pouvez ajuster la taille
+	perso2 = this.physics.add.sprite(300, 100, 'perso2');
+	perso2.setImmovable(true); // Empêche perso1 de se déplacer lors des collisions
+    perso2.body.moves = false; // Désactive le déplacement physique de perso1
+	
+	
+	const detectionZone = this.add.zone(perso1.x, perso1.y, 80, 80); // Vous pouvez ajuster la taille
     this.physics.world.enable(detectionZone); // Active la physique pour cette zone
     detectionZone.body.setAllowGravity(false);
     detectionZone.body.moves = false;
+	
+	const detectionZone2 = this.add.zone(perso2.x, perso2.y, 80, 80); // Vous pouvez ajuster la taille
+    this.physics.world.enable(detectionZone2); // Active la physique pour cette zone
+    detectionZone2.body.setAllowGravity(false);
+    detectionZone2.body.moves = false;
+	
 	
 	
     player = this.physics.add.sprite(150, 100, 'player');
@@ -73,6 +85,13 @@ function create() {
 
     this.physics.add.collider(player, perso1);
 	this.physics.add.overlap(player, detectionZone, function () {
+		model = "jean"
+        isTouching = true;
+    }, null, this);
+
+	this.physics.add.collider(player, perso2);
+	this.physics.add.overlap(player, detectionZone2, function () {
+		model = "chacha"
         isTouching = true;
     }, null, this);
 	
@@ -120,19 +139,21 @@ function update() {
 		chatBox.style.display = "none";	
 		var output = document.getElementById("chatoutput");
         output.value = ""; 
-		
 	}
+	 // Réinitialiser isTouching à chaque frame
+	
     if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
         player.anims.stop();
-    }
+    } else {
+		isTouching = false;
+	}
 
-    isTouching = false; // Réinitialiser isTouching à chaque frame
+    
 }
 
 function triggerFunction() {
        var chatBox = document.getElementById("chatBox");
 	   chatBox.style.display = "block"; // Affiche la fenêtre de chat
-	   
 	   
 	   var chatInput = document.getElementById("chatInput");
 	   chatInput.focus(); // Met le focus sur le champ de saisie
