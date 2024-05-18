@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+		
+		.loader {
+			color: #aaa;
+			font-style: italic;
+		}
+		
+		.bot{
+			font-weight: bold;
+		}
+
+        #chat-container {
+            width: 300px;
+            height: 80vh;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #chat-box {
+            height: 90%;
+            overflow-y: scroll;
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #chat-input {
+            width: calc(100% - 10px);
+        }
+		#chat-box div {
+			margin-bottom: 10px; /* Ajustez la marge selon vos besoins */
+		}
+
+		
+        button {
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-box">
+            <!-- Messages seront ajoutés ici -->
+        </div>
+        <input type="text" id="chat-input" placeholder="Ask your question...">
+        <button onclick="sendMessage()">Envoyer</button>
+    </div>
+    <script>
+		idPlayer = Math.random().toString(36).substring(7)
+		
+		const params = new URLSearchParams(window.location.search);
+		const model = params.get('model') || 'edhec'
+		
+		function sendMessage() {
+            var input = document.getElementById('chat-input');
+            var message = input.value;
+            input.value = ''; // Vider l'input après l'envoi
+
+            // Afficher le message dans le chat
+            displayMessage(message, 'user');
+			displayMessage("Loading...", "loader");
+			const data = { question: message, model: model, idPlayer: idPlayer };
+			
+            // Appel API pour obtenir une réponse
+            fetch("http://109.210.115.164:8080", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => 
+			response.text()
+			)
+            .then(d => {
+			removeLoadingMessage()
+			let text =  d;  // Convertit la réponse en texte
+			let jsonStart = text.indexOf('{');  // Trouve la position du premier '{'
+
+			text = text.substring(jsonStart);  // Extrayez à partir du premier '{'
+			
+			const responseData = JSON.parse(text);  // Parsez le texte comme JSO
+            displayMessage(responseData.message, 'bot');
+            })
+            .catch(error => {
+				console.error('Error:', error);
+				removeLoadingMessage();
+				displayMessage("Erreur lors de la récupération de la réponse.", "error");
+			});
+        }
+		
+		document.getElementById("chat-input").addEventListener("keypress", function(event) {
+			if (event.key === "Enter") {  // Vérifier si la touche pressée est "Entrée"
+				event.preventDefault();  // Empêcher le comportement par défaut de la touche "Entrée" (nouvelle ligne ou soumission du formulaire)
+				sendMessage();  // Appeler sendMessage si "Entrée" est pressée
+			}
+		});
+      
+	  
+	  
+		function removeLoadingMessage() {
+			const loaders = document.querySelectorAll('.loader');
+			loaders.forEach(loader => loader.remove());
+		}
+        function displayMessage(message, sender) {
+            var chatBox = document.getElementById('chat-box');
+            var messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            messageDiv.className = sender; // Ajoute une classe pour le style différent
+            chatBox.appendChild(messageDiv);
+
+            // Faire défiler automatiquement vers le bas
+           // chatBox.scrollTop = chatBox.scrollHeight;
+		       if (sender === 'bot') {
+					// Assurez-vous que le message du bot est visible en haut
+					messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				} else {
+					// Défilement jusqu'à la fin de la boîte de chat après un court délai
+					setTimeout(() => {
+						chatBox.scrollTop = chatBox.scrollHeight;
+					}, 100);
+				}
+	
+			
+			
+        }
+		if (model == "edhec")
+			displayMessage("Hello, I am Scientific Beta's bot. Ask me something!", "bot")
+		if (model == "poker")
+			displayMessage("Salut, je suis un expert du poker. pose moi des questions!", "bot")
+		
+    </script>
+</body>
+</html>

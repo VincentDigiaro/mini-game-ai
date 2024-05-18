@@ -4,8 +4,14 @@ from urllib.parse import parse_qs
 import subprocess
 import re
 import requests
+import os
 
 jsonHistory =  {}
+
+fichiers = os.listdir('.')
+modeles = [fichier.replace('model_', '') for fichier in fichiers if fichier.startswith('model_')]
+modeles.append("llama3")
+
 
 class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
     def _set_headers(self):
@@ -18,11 +24,6 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type')
         self.end_headers()
 
-    def do_GET(self):
-        self._set_headers()
-        response_message = "Hello! It's nice to meet you. Is there something I can help you with, or would you like to chat?"
-        self.wfile.write(response_message.encode('utf-8'))
-
     def do_POST(self):
         
         self._set_headers()       
@@ -32,6 +33,21 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         # Lit les données postées et les décode en JSON
         post_data = self.rfile.read(content_length).decode('utf-8')
         post_vars = json.loads(post_data)
+        
+        
+        required_keys = {'question', 'model', 'idPlayer'}
+        received_keys = set(post_vars.keys())
+
+        # Vérifier si tous les paramètres requis sont présents et qu'aucun supplémentaire n'est inclus
+        if required_keys != received_keys:
+            # Si les clés ne correspondent pas, renvoyer une erreur
+            self.send_response(400)  # Bad Request
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            response_data = json.dumps({"error": "Invalid request parameters. Please provide exactly 'question', 'model', and 'idPlayer'."})
+            self.wfile.write(response_data.encode('utf-8'))
+            return
+        
         
         question = post_vars.get('question')
         model = post_vars.get('model')
@@ -43,7 +59,10 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         userQuestion = {"role": "user", "content": question}
         
         if (idPlayer not in jsonHistory):
-            jsonHistory[idPlayer] = {'jean':[], 'chacha': []}
+            if (idPlayer not in jsonHistory):
+                jsonHistory[idPlayer] = {}
+                for m in modeles:
+                    jsonHistory[idPlayer][m] = []
             
         jsonHistory[idPlayer][model].append(userQuestion)
         
