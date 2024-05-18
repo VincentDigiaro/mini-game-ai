@@ -8,11 +8,6 @@ import os
 
 jsonHistory =  {}
 
-fichiers = os.listdir('.')
-modeles = [fichier.replace('model_', '') for fichier in fichiers if fichier.startswith('model_')]
-modeles.append("llama3")
-
-
 class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
     def _set_headers(self):
         self.send_response(200)
@@ -59,10 +54,9 @@ class CORSHTTPRequestHandler(BaseHTTPRequestHandler):
         userQuestion = {"role": "user", "content": question}
         
         if (idPlayer not in jsonHistory):
-            if (idPlayer not in jsonHistory):
-                jsonHistory[idPlayer] = {}
-                for m in modeles:
-                    jsonHistory[idPlayer][m] = []
+            jsonHistory[idPlayer] = {}
+        if (model not in jsonHistory[idPlayer]):
+            jsonHistory[idPlayer][model] = []
             
         jsonHistory[idPlayer][model].append(userQuestion)
         
