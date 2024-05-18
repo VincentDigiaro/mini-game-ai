@@ -39,4 +39,4 @@ python -m http.server 8081
 
 Browse http://<put_yout_ip_here>:8081 for the mini game
 
-Browse http://<put_yout_ip_here>:8081?model=<anyBuiltModel> to talk to any model you created with ollama
+Browse http://<put_yout_ip_here>:8081?model=<your_model> to talk to any model you created with ollama
